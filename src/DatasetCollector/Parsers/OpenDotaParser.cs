@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace DatasetCollector.Parsers;
 
-public class OpenDotaParser
+public class OpenDotaParser : IParser
 {
     private readonly string _originPath;
     private readonly IMapper _mapper;

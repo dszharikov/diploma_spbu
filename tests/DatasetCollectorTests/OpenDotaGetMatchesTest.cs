@@ -6,18 +6,14 @@ using DatasetCollector.Profiles;
 namespace DatasetCollector;
 
 [TestFixture]
-public class OpenDotaGetMatchesTest
+public class OpenDotaGetMatchesTest : TestCollectorBase
 {
-    private OpenDotaParser _openDotaParser;
     private List<Match>? _matches;
+    
     [SetUp]
-    public void Setup()
+    public async void Setup()
     {
-        var mapper = new Mapper(new MapperConfiguration(
-            cfg => cfg.AddProfile<MatchProfile>()));
-        _openDotaParser = new OpenDotaParser(mapper);
-        
-        _matches = _openDotaParser.GetMatches().Result;
+        _matches = await Parser.GetMatches();
     }
 
     [Test]
@@ -35,8 +31,8 @@ public class OpenDotaGetMatchesTest
     [Test]
     public void NotNullLessThanMatchIdRequest()
     {
-        var lessThanMatchId = _matches.Min(m => m.MatchId);
-        var matches = _openDotaParser.GetMatches(lessThanMatchId).Result;
+        var minimalMatchId = _matches.Min(m => m.MatchId);
+        var matches = Parser.GetMatches(minimalMatchId).Result;
         Assert.False(matches is null);
     }
 
@@ -44,7 +40,7 @@ public class OpenDotaGetMatchesTest
     public void NoRepeatedMatchesLessThanMatchId()
     {
         var minimalMatchId = _matches.Min(m => m.MatchId);
-        var matches = _openDotaParser.GetMatches(minimalMatchId).Result;
+        var matches = Parser.GetMatches(minimalMatchId).Result;
 
         var firstMatchInRequest = _matches.FirstOrDefault(match => match.MatchId == minimalMatchId);
         
