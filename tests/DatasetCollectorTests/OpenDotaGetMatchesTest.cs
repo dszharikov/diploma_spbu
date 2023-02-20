@@ -1,7 +1,4 @@
-using AutoMapper;
 using DatasetCollector.Models;
-using DatasetCollector.Parsers;
-using DatasetCollector.Profiles;
 
 namespace DatasetCollector;
 
@@ -11,9 +8,9 @@ public class OpenDotaGetMatchesTest : TestCollectorBase
     private List<Match>? _matches;
     
     [SetUp]
-    public async void Setup()
+    public void Setup()
     {
-        _matches = await Parser.GetMatches();
+        _matches = Parser.GetMatches().Result;
     }
 
     [Test]

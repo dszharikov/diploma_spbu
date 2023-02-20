@@ -16,6 +16,9 @@ public class CollectionServiceTest : TestCollectorBase
     [Test]
     public async Task NoWaitingBeforeExecuteTest()
     {
+        Context.Matches.RemoveRange(Context.Matches);
+        await Context.SaveChangesAsync();
+        
         var matches = await Parser.GetMatches();
 
         var medianMatchId = matches[matches.Count / 2].MatchId;
