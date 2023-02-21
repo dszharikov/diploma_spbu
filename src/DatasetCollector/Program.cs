@@ -1,3 +1,4 @@
+using Coravel;
 using DatasetCollector.DataBases;
 using DatasetCollector.Parsers;
 using DatasetCollector.Services;
@@ -12,10 +13,16 @@ builder.Services.AddDbContext<AppDbContext>(o =>
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddHostedService<CollectionService>();
+builder.Services.AddScheduler();
+builder.Services.AddTransient<DataCollector>();
+// builder.Services.AddHostedService<CollectionService>();
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.Services.UseScheduler(scheduler =>
+{
+    var jobSchedule = scheduler.Schedule<DataCollector>();
+    jobSchedule.Daily();
+});
 
 app.Run();

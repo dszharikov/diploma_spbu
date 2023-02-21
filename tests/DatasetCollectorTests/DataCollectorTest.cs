@@ -1,23 +1,28 @@
+using DatasetCollector.DataBases;
+using DatasetCollector.Parsers;
 using DatasetCollector.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace DatasetCollector;
 
 [TestFixture]
-public class CollectionServiceTest : TestCollectorBase
+public class DataCollectorTest : TestCollectorBase
 {
-    private CollectionService _collectionService;
+    private DataCollector _dataCollector;
 
     [SetUp]
     public void Setup()
     {
-        _collectionService = new CollectionService(Parser, Context);
+        //_dataCollector = new DataCollector(Context, Parser);
     }
 
     [Test]
     public async Task NoWaitingBeforeExecuteTest()
     {
-        Context.Matches.RemoveRange(Context.Matches);
-        await Context.SaveChangesAsync();
+        Context = MatchContextFactory.Create();
+        _dataCollector = new DataCollector(Context, Parser);
         
         var matches = await Parser.GetMatches();
 
@@ -28,19 +33,17 @@ public class CollectionServiceTest : TestCollectorBase
         Context.Matches.AddRange(halfMatches);
         await Context.SaveChangesAsync();
 
-        await _collectionService.StartAsync(CancellationToken.None);
+        await _dataCollector.Invoke();
 
-        await Task.Delay(Constants.IntervalBetweenRequestsInMilliSec * 2);
-
-        await _collectionService.StopAsync(CancellationToken.None);
         Assert.True(Context.Matches.Count() > halfMatches.Count);
     }
 
     [Test]
     public async Task AddMoreThanOneMatchesPageTest()
     {
-        Context.Matches.RemoveRange(Context.Matches);
-        await Context.SaveChangesAsync();
+        Context = MatchContextFactory.Create();       
+        _dataCollector = new DataCollector(Context, Parser);
+
 
         var matchesQuantity = 0;
         
@@ -58,31 +61,8 @@ public class CollectionServiceTest : TestCollectorBase
         Context.Matches.AddRange(matches);
         await Context.SaveChangesAsync();
 
-        await _collectionService.StartAsync(CancellationToken.None);
+        await _dataCollector.Invoke();
 
-        await Task.Delay(Constants.IntervalBetweenRequestsInMilliSec * 4);
-
-        await _collectionService.StopAsync(CancellationToken.None);
-        
         Assert.True(Context.Matches.Count() >= matchesQuantity);
-    }
-
-    [Test]
-    public async Task CollectAllMatchesFromCurrentPatchTest()
-    {
-        Context.Matches.RemoveRange(Context.Matches);
-        await Context.SaveChangesAsync();
-
-        var cancellationTokenSource = new CancellationTokenSource();
-        
-        await _collectionService.StartAsync(cancellationTokenSource.Token);
-
-        await Task.Delay(Constants.IntervalBetweenRequestsInMilliSec * 5);
-
-        cancellationTokenSource.Cancel();
-        
-        //await _collectionService.StopAsync(CancellationToken.None);
-        
-        Assert.True(Context.Matches.Any());
     }
 }
