@@ -30,7 +30,7 @@ jobs:
           script: |  
             cd ${{ secrets.PROJECT_PATH }} 
             git pull origin main 
-            make down-v
+            make down
             make build
             echo "Deleting old image(s)..."
             docker image prune -a -f
