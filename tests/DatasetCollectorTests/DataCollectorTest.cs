@@ -1,9 +1,4 @@
-using DatasetCollector.DataBases;
-using DatasetCollector.Parsers;
 using DatasetCollector.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace DatasetCollector;
 
@@ -11,12 +6,6 @@ namespace DatasetCollector;
 public class DataCollectorTest : TestCollectorBase
 {
     private DataCollector _dataCollector;
-
-    [SetUp]
-    public void Setup()
-    {
-        //_dataCollector = new DataCollector(Context, Parser);
-    }
 
     [Test]
     public async Task NoWaitingBeforeExecuteTest()
@@ -29,7 +18,7 @@ public class DataCollectorTest : TestCollectorBase
         var medianMatchId = matches[matches.Count / 2].MatchId;
 
         var halfMatches = matches.Where(m => m.MatchId < medianMatchId).ToList();
-        
+
         Context.Matches.AddRange(halfMatches);
         await Context.SaveChangesAsync();
 

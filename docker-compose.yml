@@ -1,0 +1,36 @@
+version: '3.4'
+
+networks:
+  collectorapi-dev:
+    driver: bridge
+
+services:
+  collectorapi: 
+    image: collectorapi:latest
+    depends_on:
+      - "postgres_image"
+    build: 
+      context: .
+    ports:
+      - "8080:80"
+    environment:
+      - DB_CONNECTION_STRING=host=postgres_image;port=5432;database=matchDB;username=collectoruser;password=collectionuser
+    networks:
+      - collectorapi-dev
+  
+  postgres_image:
+    image: postgres:latest
+    ports:
+      - "5432"
+    restart: always
+    volumes:
+      - db_volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=collectoruser
+      - POSTGRES_PASSWORD=collectionuser
+      - POSTGRES_DB=matchDB
+    networks:
+      - collectorapi-dev
+
+volumes:
+  db_volume:

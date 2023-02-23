@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Coravel.Invocable;
 using DatasetCollector.DataBases;
 using DatasetCollector.Parsers;
@@ -17,6 +18,7 @@ public class DataCollector : IInvocable
 
     public async Task Invoke()
     {
+        Console.WriteLine($"Debug: Invoke executed {DateTime.Now}");
         if (_context.Matches.Any())
         {
             var maxMatchId = _context.Matches.Max(match => match.MatchId);
@@ -26,6 +28,7 @@ public class DataCollector : IInvocable
         {
             await CollectAllMatchesCurrentPatch();
         }
+        Console.WriteLine($"Debug: Invoke ended {DateTime.Now}");
     }
     
     private async Task CollectAllMatchesCurrentPatch()
