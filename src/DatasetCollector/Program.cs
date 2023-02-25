@@ -35,7 +35,7 @@ var app = builder.Build();
 app.Services.UseScheduler(scheduler =>
 {
     var jobSchedule = scheduler.Schedule<DataCollector>();
-    jobSchedule.Daily();
+    jobSchedule.Daily().RunOnceAtStart();
 });
 
 app.MapGet("/csv", (AppDbContext context) =>
@@ -62,7 +62,6 @@ app.MapGet("/download", (AppDbContext context) =>
 
         var matches = context.Matches;
         var csv = CsvSerializer.SerializeToCsv(matches);
-        Console.WriteLine(csv);
         File.WriteAllText(fullPath, csv);
     }
 
