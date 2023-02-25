@@ -13,6 +13,8 @@ services:
       context: .
     ports:
       - "80:80"
+    volumes:
+      - shared_files:/collector
     environment:
       - DB_CONNECTION_STRING=host=postgres_image;port=5432;database=matchDB;username=collectoruser;password=collectionuser
     networks:
@@ -34,3 +36,4 @@ services:
 
 volumes:
   db_volume:
+  shared_files:
