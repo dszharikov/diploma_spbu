@@ -1,4 +1,4 @@
-using System.Net;
+using System.Globalization;
 using Coravel;
 using DatasetCollector.DataBases;
 using DatasetCollector.Parsers;
@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<IParser, OpenDotaParser>();
+builder.Services.AddTransient<DatasetCollector.Parsers.IParser, OpenDotaParser>();
 
 if (builder.Environment.IsProduction())
 {
@@ -38,34 +38,36 @@ app.Services.UseScheduler(scheduler =>
     jobSchedule.Daily().RunOnceAtStart();
 });
 
-app.MapGet("/csv", (AppDbContext context) =>
+app.MapGet("/example", (AppDbContext context) =>
 {
-    var matches = context.Matches;
+    var matches = context.Matches.Take(25);
     var csv = CsvSerializer.SerializeToCsv(matches);
     return csv;
 });
 
-app.MapGet("/download", (AppDbContext context) => 
+app.MapGet("/download", async (AppDbContext context) => 
 {
-    string directoryPath = "/collector/";
-    var maxMatchId = context.Matches.Any() ? context.Matches.Max(match => match.MatchId).ToString() : "0";
-    var fileName = maxMatchId + ".csv";
+    var fileName = DateTime.Now.ToString("dd-MM-yyyy-hh") + ".csv";
+    var directoryPath = "/collector/";
     var fullPath = directoryPath + fileName;
     
-    if (!File.Exists(fullPath))
+    if (File.Exists(fullPath))
     {
-        var di = new DirectoryInfo(directoryPath);
-        foreach (var file in di.GetFiles())
-        {
-            file.Delete(); 
-        }
-
-        var matches = context.Matches;
-        var csv = CsvSerializer.SerializeToCsv(matches);
-        File.WriteAllText(fullPath, csv);
+        return Results.File(fullPath, "application/octet-stream", "Matches.csv");
     }
 
-    return Results.File(File.ReadAllBytes(fullPath), "application/octet-stream", "Matches.csv");
+    var di = new DirectoryInfo(directoryPath);
+    foreach (var file in di.GetFiles())
+    {
+        file.Delete(); 
+    }
+        
+    using (var writer = new StreamWriter(fullPath))
+    using (var csvWriter = new CsvHelper.CsvWriter(writer, CultureInfo.InvariantCulture))
+    {
+        await csvWriter.WriteRecordsAsync(context.Matches);
+    }
+    return Results.File(fullPath, "application/octet-stream", "Matches.csv");
 });
 
 app.MapGet("/info", (AppDbContext context) =>

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Coravel.Invocable;
 using DatasetCollector.DataBases;
 using DatasetCollector.Models;
@@ -53,7 +52,6 @@ public class DataCollector : IInvocable
             await _context.Matches.AddRangeAsync(matches);
             await _context.SaveChangesAsync();
             matches = await _parser.GetMatches(lessThanMatchId: minimalMatchId); // ^1 = last element
-            Console.WriteLine($"----- Got matches: {DateTime.Now}");
             Thread.Sleep(Constants.IntervalBetweenRequestsInMilliSec);
         }
 
