@@ -11,6 +11,7 @@ services:
       - "postgres_image"
     build: 
       context: .
+    restart: on-failure
     ports:
       - "80:80"
     volumes:
@@ -31,6 +32,8 @@ services:
       - POSTGRES_USER=collectoruser
       - POSTGRES_PASSWORD=collectionuser
       - POSTGRES_DB=matchDB
+    networks:
+      - collectorapi-dev
 
 volumes:
   db_volume:
