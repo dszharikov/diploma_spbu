@@ -45,30 +45,30 @@ app.MapGet("/example", (AppDbContext context) =>
     return csv;
 });
 
-app.MapGet("/download", async (AppDbContext context) => 
-{
-    var fileName = DateTime.Now.ToString("dd-MM-yyyy-hh") + ".csv";
-    var directoryPath = "/collector/";
-    var fullPath = directoryPath + fileName;
+// app.MapGet("/download", async (AppDbContext context) => 
+// {
+//     var fileName = DateTime.Now.ToString("dd-MM-yyyy-hh") + ".csv";
+//     var directoryPath = "/collector/";
+//     var fullPath = directoryPath + fileName;
     
-    if (File.Exists(fullPath))
-    {
-        return Results.File(fullPath, "application/octet-stream", "Matches.csv");
-    }
+//     if (File.Exists(fullPath))
+//     {
+//         return Results.File(fullPath, "application/octet-stream", "Matches.csv");
+//     }
 
-    var di = new DirectoryInfo(directoryPath);
-    foreach (var file in di.GetFiles())
-    {
-        file.Delete(); 
-    }
+//     var di = new DirectoryInfo(directoryPath);
+//     foreach (var file in di.GetFiles())
+//     {
+//         file.Delete(); 
+//     }
         
-    using (var writer = new StreamWriter(fullPath))
-    using (var csvWriter = new CsvHelper.CsvWriter(writer, CultureInfo.InvariantCulture))
-    {
-        await csvWriter.WriteRecordsAsync(context.Matches);
-    }
-    return Results.File(fullPath, "application/octet-stream", "Matches.csv");
-});
+//     using (var writer = new StreamWriter(fullPath))
+//     using (var csvWriter = new CsvHelper.CsvWriter(writer, CultureInfo.InvariantCulture))
+//     {
+//         await csvWriter.WriteRecordsAsync(context.Matches);
+//     }
+//     return Results.File(fullPath, "application/octet-stream", "Matches.csv");
+// });
 
 app.MapGet("/info", (AppDbContext context) =>
 {

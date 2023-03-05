@@ -23,7 +23,7 @@ services:
   postgres_image:
     image: postgres:latest
     ports:
-      - "5432"
+      - "5432:5432"
     restart: always
     volumes:
       - db_volume:/var/lib/postgresql/data
@@ -31,8 +31,6 @@ services:
       - POSTGRES_USER=collectoruser
       - POSTGRES_PASSWORD=collectionuser
       - POSTGRES_DB=matchDB
-    networks:
-      - collectorapi-dev
 
 volumes:
   db_volume:
