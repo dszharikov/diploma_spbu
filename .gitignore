@@ -490,3 +490,12 @@ $RECYCLE.BIN/
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# Do not want to see debugger vs code
+.vscode/*
+.idea/*
+
+# no vs code extensions to save
+**/.vs
+**/.vscode
+**/.idea

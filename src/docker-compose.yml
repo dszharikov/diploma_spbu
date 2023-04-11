@@ -11,6 +11,7 @@ services:
       - "postgres_image"
     build: 
       context: .
+      dockerfile: DatasetCollector/Dockerfile
     restart: on-failure
     ports:
       - "80:80"
@@ -27,7 +28,7 @@ services:
       - "5432:5432"
     restart: always
     volumes:
-      - db_volume:/var/lib/postgresql/data
+      - postgresql_volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=collectoruser
       - POSTGRES_PASSWORD=collectionuser
@@ -36,5 +37,5 @@ services:
       - collectorapi-dev
 
 volumes:
-  db_volume:
+  postgresql_volume:
   shared_files:

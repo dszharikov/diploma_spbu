@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["src/DatasetCollector/DatasetCollector.csproj", "src/DatasetCollector/"]
-RUN dotnet restore "src/DatasetCollector/DatasetCollector.csproj"
+COPY ["DatasetCollector/DatasetCollector.csproj", "DatasetCollector/"]
+RUN dotnet restore "DatasetCollector/DatasetCollector.csproj"
 COPY . .
-WORKDIR "/src/src/DatasetCollector"
+WORKDIR "/src/DatasetCollector"
 RUN dotnet build "DatasetCollector.csproj" -c Release -o /app/build
 
 FROM build AS publish

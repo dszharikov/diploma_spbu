@@ -24,6 +24,7 @@ else
     });
 }
 
+System.Console.WriteLine("---> Dataset Collector was instantiated");
 
 builder.Services.AddAutoMapper(typeof(Program));
 
