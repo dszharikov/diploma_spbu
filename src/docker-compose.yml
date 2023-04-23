@@ -1,7 +1,7 @@
 version: '3.4'
 
 networks:
-  collectorapi-dev:
+  diplomaspbu-dev:
     driver: bridge
 
 services:
@@ -19,9 +19,17 @@ services:
       - shared_files:/collector
     environment:
       - DB_CONNECTION_STRING=host=postgres_image;port=5432;database=matchDB;username=collectoruser;password=collectionuser
-    networks:
-      - collectorapi-dev
-  
+
+  predictor-api:
+    image: predictor-api:latest
+    build: 
+      context: .
+      dockerfile: MLModel/Dockerfile
+    restart: on-failure
+    ports:
+      - "8080:80"
+    volumes:
+      - predictor_volume:/code
   postgres_image:
     image: postgres:latest
     ports:
@@ -33,9 +41,8 @@ services:
       - POSTGRES_USER=collectoruser
       - POSTGRES_PASSWORD=collectionuser
       - POSTGRES_DB=matchDB
-    networks:
-      - collectorapi-dev
 
 volumes:
   postgresql_volume:
   shared_files:
+  predictor_volume:

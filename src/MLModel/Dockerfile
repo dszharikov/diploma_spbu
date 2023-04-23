@@ -1,7 +1,9 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
-COPY ./requirements.txt /app/requirements.txt
+WORKDIR /code
 
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+COPY MLModel/requirements.txt /code/requirements.txt
 
-COPY ./app /app/app
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+COPY MLModel/app /code/app
