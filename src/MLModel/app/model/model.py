@@ -13,8 +13,8 @@ with open(f"{BASE_DIR}/model-{__version__}.pkl", "rb") as f:
 
 def predict_pipeline(input):
 
-    radiantHeroes = list(map(int, input.radiant_picked.split(',')))
-    direHeroes = list(map(int, input.dire_picked.split(',')))
+    radiantHeroes = list(map(int, input.radiant.split(',')))
+    direHeroes = list(map(int, input.dire.split(',')))
     bannedHeroes = list(map(int, input.banned.split(',')))
 
     print(radiantHeroes)

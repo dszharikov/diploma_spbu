@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.model.model import predict_pipeline
 from app.model.model import __version__ as model_version
@@ -6,10 +7,31 @@ from app.model.model import __version__ as model_version
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+    "localhost:3000"
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class PicksIn(BaseModel):
-    radiant_picked: str
-    dire_picked: str
+    radiant: str
+    dire: str
     banned: str
 
 

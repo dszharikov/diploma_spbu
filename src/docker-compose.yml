@@ -14,22 +14,35 @@ services:
       dockerfile: DatasetCollector/Dockerfile
     restart: on-failure
     ports:
-      - "80:80"
+      - "8070:80"
     volumes:
       - shared_files:/collector
     environment:
-      - DB_CONNECTION_STRING=host=postgres_image;port=5432;database=matchDB;username=collectoruser;password=collectionuser
-
+      - DB_CONNECTION_STRING=host=postgres_image;port=5432;database=matchDB;username=datasetcollector;password=datasetcollector
+      - HttpMLSerializer=http://ml-serializer
   predictor-api:
     image: predictor-api:latest
     build: 
-      context: .
-      dockerfile: MLModel/Dockerfile
+      context: MLModel/
+      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "8080:80"
     volumes:
       - predictor_volume:/code
+
+  ml-serializer:
+    image: ml-serializer:latest
+    build: 
+      context: MLSerializer/
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "80"
+    volumes:
+      - predictor_volume:/code
+    
+
   postgres_image:
     image: postgres:latest
     ports:
@@ -37,10 +50,19 @@ services:
     restart: always
     volumes:
       - postgresql_volume:/var/lib/postgresql/data
+      - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
     environment:
-      - POSTGRES_USER=collectoruser
-      - POSTGRES_PASSWORD=collectionuser
-      - POSTGRES_DB=matchDB
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+  client-app:
+    container_name: docker-react-c 
+    image: docker-react-i 
+    build:
+      context: .
+      dockerfile: ClientWeb/Dockerfile
+    ports:
+    - 3000:80
 
 volumes:
   postgresql_volume:

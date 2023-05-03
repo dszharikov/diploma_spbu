@@ -2,18 +2,21 @@ using Coravel.Invocable;
 using DatasetCollector.DataBases;
 using DatasetCollector.Models;
 using DatasetCollector.Parsers;
+using DatasetCollector.Services.MLSerializerServices;
 
 namespace DatasetCollector.Services;
 
 public class DataCollector : IInvocable
 {
     private IParser _parser;
+    private readonly IMLSerializerService _mlSerliazerService;
     private AppDbContext _context;
 
-    public DataCollector(AppDbContext context, IParser parser)
+    public DataCollector(AppDbContext context, IParser parser, IMLSerializerService mLSerializerService)
     {
         _context = context;
         _parser = parser;
+        _mlSerliazerService = mLSerializerService;
     }
 
     public async Task Invoke()
@@ -25,6 +28,8 @@ public class DataCollector : IInvocable
             await CollectMatchesNewerThanMatchId(maxMatchId);
             var minMatchId = _context.Matches.Min(match => match.MatchId);
             await CollectAllMatchesCurrentPatch(minMatchId);
+
+            await _mlSerliazerService.NotifyMLSerializer();
         }
         else
         {
@@ -46,7 +51,7 @@ public class DataCollector : IInvocable
         }
 
         // checking if there is NO MATCH with START TIME LESS than DATE of CURRENT BIG UPDATE
-        while (matches.FirstOrDefault(m => m.StartTime < Constants.UnixTimeLastPatch) is null)
+        while (matches.FirstOrDefault(m => m.StartTime < Constants.UnixTimeLastPatchStarted) is null)
         {
             minimalMatchId = matches[^1].MatchId;
             await _context.Matches.AddRangeAsync(matches);
@@ -56,7 +61,7 @@ public class DataCollector : IInvocable
         }
 
         await _context.Matches.AddRangeAsync(matches.Where(
-            m => m.StartTime > Constants.UnixTimeLastPatch));
+            m => m.StartTime > Constants.UnixTimeLastPatchStarted));
     }
 
     private async Task CollectMatchesNewerThanMatchId(long maxMatchId)

@@ -3,6 +3,7 @@ using Coravel;
 using DatasetCollector.DataBases;
 using DatasetCollector.Parsers;
 using DatasetCollector.Services;
+using DatasetCollector.Services.MLSerializerServices;
 using Microsoft.EntityFrameworkCore;
 using ServiceStack.Text;
 
@@ -13,7 +14,7 @@ builder.Services.AddTransient<DatasetCollector.Parsers.IParser, OpenDotaParser>(
 if (builder.Environment.IsProduction())
 {
     var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-    builder.Services.AddDbContext<AppDbContext>(o => 
+    builder.Services.AddDbContext<AppDbContext>(o =>
         o.UseNpgsql(connectionString));
 }
 else
@@ -31,6 +32,11 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScheduler();
 builder.Services.AddTransient<DataCollector>();
 
+builder.Services.AddHttpClient<IMLSerializerService, MLSerializerService>(client =>
+        {
+            client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("HttpMLSerializer")!);
+        });
+
 var app = builder.Build();
 
 app.Services.UseScheduler(scheduler =>
@@ -38,6 +44,9 @@ app.Services.UseScheduler(scheduler =>
     var jobSchedule = scheduler.Schedule<DataCollector>();
     jobSchedule.Daily().RunOnceAtStart();
 });
+
+
+
 
 app.MapGet("/example", (AppDbContext context) =>
 {
@@ -51,7 +60,7 @@ app.MapGet("/example", (AppDbContext context) =>
 //     var fileName = DateTime.Now.ToString("dd-MM-yyyy-hh") + ".csv";
 //     var directoryPath = "/collector/";
 //     var fullPath = directoryPath + fileName;
-    
+
 //     if (File.Exists(fullPath))
 //     {
 //         return Results.File(fullPath, "application/octet-stream", "Matches.csv");
@@ -62,7 +71,7 @@ app.MapGet("/example", (AppDbContext context) =>
 //     {
 //         file.Delete(); 
 //     }
-        
+
 //     using (var writer = new StreamWriter(fullPath))
 //     using (var csvWriter = new CsvHelper.CsvWriter(writer, CultureInfo.InvariantCulture))
 //     {

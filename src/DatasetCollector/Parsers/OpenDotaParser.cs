@@ -19,13 +19,14 @@ public class OpenDotaParser : IParser
     public async Task<List<Match>> GetMatches(long? lessThanMatchId = null)
     {
         using var client = new HttpClient();
-        
+
         string url = _originPath + "/publicMatches";
-        if (lessThanMatchId != null)
+        if (lessThanMatchId == null)
         {
-            url += $"?less_than_match_id={lessThanMatchId}";
+            lessThanMatchId = Constants.BiggestMatchIdLastPatch;
         }
-        
+
+        url += $"?less_than_match_id={lessThanMatchId}";
         var requestResult = await client.GetStringAsync(url);
 
         var matchesDto = JsonConvert.DeserializeObject<List<MatchParseDto>>(requestResult);
