@@ -20,6 +20,7 @@ services:
     environment:
       - DB_CONNECTION_STRING=host=postgres_image;port=5432;database=matchDB;username=datasetcollector;password=datasetcollector
       - HttpMLSerializer=http://ml-serializer
+
   predictor-api:
     image: predictor-api:latest
     build: 
@@ -31,16 +32,16 @@ services:
     volumes:
       - predictor_volume:/code
 
-  ml-serializer:
-    image: ml-serializer:latest
-    build: 
-      context: MLSerializer/
-      dockerfile: Dockerfile
-    restart: on-failure
-    ports:
-      - "80"
-    volumes:
-      - predictor_volume:/code
+  # ml-serializer:
+  #   image: ml-serializer:latest
+  #   build: 
+  #     context: MLSerializer/
+  #     dockerfile: Dockerfile
+  #   restart: on-failure
+  #   ports:
+  #     - "80"
+  #   volumes:
+  #     - predictor_volume:/code
     
 
   postgres_image:

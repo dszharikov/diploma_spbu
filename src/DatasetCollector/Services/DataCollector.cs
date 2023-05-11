@@ -22,6 +22,8 @@ public class DataCollector : IInvocable
     public async Task Invoke()
     {
         Console.WriteLine($"----- Debug: Invoke executed {DateTime.Now}");
+
+        //await CollectProMatchesIds(leagueId:15089, unixTimeLeagueBegan: 1676910072);
         if (_context.Matches.Any())
         {
             var maxMatchId = _context.Matches.Max(match => match.MatchId);
@@ -37,7 +39,7 @@ public class DataCollector : IInvocable
         }
         Console.WriteLine($"----- Debug: Invoke ended {DateTime.Now}");
     }
-    
+
     private async Task CollectAllMatchesCurrentPatch(long? minimalMatchId = null)
     {
         List<Match> matches;
@@ -49,6 +51,8 @@ public class DataCollector : IInvocable
         {
             matches = await _parser.GetMatches();
         }
+
+        Thread.Sleep(Constants.IntervalBetweenRequestsInMilliSec);
 
         // checking if there is NO MATCH with START TIME LESS than DATE of CURRENT BIG UPDATE
         while (matches.FirstOrDefault(m => m.StartTime < Constants.UnixTimeLastPatchStarted) is null)
@@ -78,5 +82,25 @@ public class DataCollector : IInvocable
 
         _context.Matches.AddRange(matches.Where(m => m.MatchId > maxMatchId));
         await _context.SaveChangesAsync();
+    }
+
+    private async Task CollectProMatchesIds(int leagueId, long unixTimeLeagueBegan)
+    {
+        var proMatches = await _parser.GetProMatches(lessThanMatchId: 7046378200);
+        var proMatchLeagueId = new List<long>();
+        long minimalMatchId;
+        while (proMatches.FirstOrDefault(m => m.start_time < unixTimeLeagueBegan) is null)
+        {
+            minimalMatchId = proMatches[^1].match_id;
+            proMatchLeagueId.AddRange(proMatches.Where(match => match.leagueid == leagueId).Select(match => match.match_id).ToList());
+
+            Thread.Sleep(Constants.IntervalBetweenRequestsInMilliSec);
+            proMatches = await _parser.GetProMatches(lessThanMatchId: minimalMatchId); // ^1 = last element
+        } 
+
+        foreach (var matchId in proMatchLeagueId)
+        {
+            Console.WriteLine(matchId);
+        }
     }
 }

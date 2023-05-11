@@ -1,3 +1,5 @@
+using Microsoft.VisualBasic;
+using System.Reflection.Metadata;
 using System.Globalization;
 using Coravel;
 using DatasetCollector.DataBases;
@@ -9,7 +11,12 @@ using ServiceStack.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<DatasetCollector.Parsers.IParser, OpenDotaParser>();
+//builder.Services.AddTransient<DatasetCollector.Parsers.IParser, OpenDotaParser>();
+
+builder.Services.AddHttpClient<DatasetCollector.Parsers.IParser, OpenDotaParser>(client =>
+{
+    client.BaseAddress = new Uri(DatasetCollector.Constants.OriginOpenDotaPath);
+});
 
 if (builder.Environment.IsProduction())
 {
@@ -32,10 +39,21 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScheduler();
 builder.Services.AddTransient<DataCollector>();
 
-builder.Services.AddHttpClient<IMLSerializerService, MLSerializerService>(client =>
-        {
-            client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("HttpMLSerializer")!);
-        });
+if (builder.Environment.IsProduction())
+{
+
+    builder.Services.AddHttpClient<IMLSerializerService, MLSerializerService>(client =>
+            {
+                client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("HttpMLSerializer")!);
+            });
+}
+else
+{
+    builder.Services.AddHttpClient<IMLSerializerService, MLSerializerService>(client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:8060");
+            });
+}
 
 var app = builder.Build();
 
@@ -44,6 +62,7 @@ app.Services.UseScheduler(scheduler =>
     var jobSchedule = scheduler.Schedule<DataCollector>();
     jobSchedule.Daily().RunOnceAtStart();
 });
+System.Console.WriteLine("---> UseScheduler was added once a day and run at start");
 
 
 

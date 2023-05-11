@@ -41,6 +41,7 @@ class PredictionOut(BaseModel):
 
 @app.get("/")
 def home():
+    
     return {"health_check": "OK", "model_version": model_version}
 
 

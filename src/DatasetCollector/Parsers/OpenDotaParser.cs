@@ -7,30 +7,45 @@ namespace DatasetCollector.Parsers;
 
 public class OpenDotaParser : IParser
 {
-    private readonly string _originPath;
     private readonly IMapper _mapper;
+    private readonly HttpClient _httpClient;
 
-    public OpenDotaParser(IMapper mapper, string originPath = Constants.OriginOpenDotaPath)
+    public OpenDotaParser(IMapper mapper, HttpClient httpClient)
     {
-        _originPath = originPath;
         _mapper = mapper;
+        _httpClient = httpClient;
     }
 
     public async Task<List<Match>> GetMatches(long? lessThanMatchId = null)
     {
-        using var client = new HttpClient();
 
-        string url = _originPath + "/publicMatches";
+        string url = _httpClient.BaseAddress + "/publicMatches";
         if (lessThanMatchId == null)
         {
             lessThanMatchId = Constants.BiggestMatchIdLastPatch;
         }
 
         url += $"?less_than_match_id={lessThanMatchId}";
-        var requestResult = await client.GetStringAsync(url);
+        var requestResult = await _httpClient.GetStringAsync(url);
 
         var matchesDto = JsonConvert.DeserializeObject<List<MatchParseDto>>(requestResult);
 
         return _mapper.Map<List<MatchParseDto>, List<Match>>(matchesDto);
+    }
+
+    public async Task<List<ProMatch>> GetProMatches(long? lessThanMatchId = null)
+    {
+
+        string url = _httpClient.BaseAddress + "/proMatches";
+        if (lessThanMatchId is not null)
+        {
+            url += $"?less_than_match_id={lessThanMatchId}";
+        }
+        System.Console.WriteLine($"--> Sending request to {url}");
+        var requestResult = await _httpClient.GetStringAsync(url);
+
+        var proMatches = JsonConvert.DeserializeObject<List<ProMatch>>(requestResult);
+
+        return proMatches;
     }
 }
